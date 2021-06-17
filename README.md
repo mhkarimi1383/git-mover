@@ -7,5 +7,6 @@ some times you are migrating between two gitlab or other git manager instances s
 1. Change script variables (at the top section of the file)
 2. Run
 ```bash
+chmod +x ./mover.sh
 ./mover.sh <Your Repo address>
 ```
