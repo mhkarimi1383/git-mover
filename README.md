@@ -10,3 +10,6 @@ some times you are migrating between two gitlab or other git manager instances s
 chmod +x ./mover.sh
 ./mover.sh <Your Repo address>
 ```
+
+## TODO
+- [ ] Create another script do it for all repos (in a loop)
