@@ -8,10 +8,14 @@ You should have `jq, git, curl` Ready
 
 ## How to run
 1. Change variables (`env.sh` file)
-2. Run
+2. 1. Run for one repo
 ```bash
 chmod +x ./mover.sh
 ./mover.sh <Your Repo address>
+```
+2. 2. run for all repos
+```bash
+./move-all.sh
 ```
 
 ## TODO
