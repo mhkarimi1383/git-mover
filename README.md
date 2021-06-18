@@ -12,4 +12,4 @@ chmod +x ./mover.sh
 ```
 
 ## TODO
-- [ ] Create another script do it for all repos (in a loop)
+- [x] Create another script do it for all repos (in a loop)
