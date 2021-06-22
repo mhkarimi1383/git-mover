@@ -21,3 +21,4 @@ chmod +x ./mover.sh
 ## TODO
 - [x] Create another script do it for all repos (in a loop)
 - [ ] Variables from `env.sh` are not working ( source command will solve it I think)
+- [ ] Move merge requests if it's posible
