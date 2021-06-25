@@ -3,7 +3,7 @@
 # For debug (remove it if you want better output)
 set -x
 
-./env.sh
+source ./env.sh
 
 IFS="/"
 read -ra URL <<<"$1" 
