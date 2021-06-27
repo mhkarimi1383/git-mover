@@ -22,12 +22,53 @@ git clone "$1"
 unset IFS
 FULL_LOCATION=`pwd`/$FOLDER_NAME
 
+function ProgressBar {
+    let _progress=(${1}*100/${2}*100)/100
+    let _done=(${_progress}*4)/10
+    let _left=40-$_done
+    _fill=$(printf "%${_done}s")
+    _empty=$(printf "%${_left}s")
+
+printf "\rProgress : [${_fill// /#}${_empty// /-}] ${_progress}%%"
+
+}
+
 # You will get an error for you defualt branch (e.g. master)
 echo "$(tput setaf 4)INFO:$(tput sgr 0) pulling everything....."
-git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" branch -r | grep -v '\->' | while read remote; do git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" branch --track "${remote#origin/}" "$remote"; done
+_start=1
+number=1
+_end=$((`git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" branch -r | grep -v '\->' | wc -l`+2))
+git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" branch -r | grep -v '\->' |\
+while read remote
+do
+    tput el
+    tput cud1
+    sleep 0.1
+    tput cup 2 0
+    git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" branch --track "${remote#origin/}" "$remote"
+    tput cup 1 0
+    ProgressBar ${number} ${_end}
+    number=$((number + 1))
+done
+tput cup 4 0
+
+tput el
+tput cud1
+sleep 0.1
+tput cup 2 0
 git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" fetch --all
+tput cup 1 0
+ProgressBar ${number} ${_end}
+tput el
+tput cud1
+sleep 0.1
+tput cup 2 0
 git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" pull --all
+tput cup 1 0
+ProgressBar ${number} ${_end}
 echo "$(tput setaf 4)INFO:$(tput sgr 0) everything pulled"
+
+tput cup 4 0
 
 NEW_URL=${1//$OLD_GITLAB_URL/$NEW_GITLAB_URL}
 
