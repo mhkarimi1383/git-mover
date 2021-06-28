@@ -75,8 +75,28 @@ NEW_URL=${1//$OLD_GITLAB_URL/$NEW_GITLAB_URL}
 # From now on everything should be successful (if you don't want more output remove `x`')
 set -ex
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Creating Project on new gitlab....."
-curl --header "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" "https://$NEW_GITLAB_URL/api/v4/projects?name=$FOLDER_NAME&path=$FOLDER_NAME&namespace_id=$GROUP_ID" -X POST
+NEW_PROJECT_ID=`curl --header "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" "https://$NEW_GITLAB_URL/api/v4/projects?name=$FOLDER_NAME&path=$FOLDER_NAME&namespace_id=$GROUP_ID" -X POST | jq '.id'`
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Project created"
+
+echo "$(tput setaf 4)INFO:$(tput sgr 0) Moving Merge Requests....."
+OLD_PROJECT_ID=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects?search=$FOLDER_NAME" | jq '.[] | .id'`
+
+PULL_REQUEST_TITLE=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .title'`
+
+TARGET_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .target_branch'`
+
+SOURCE_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .source_branch'`
+
+IFS=$'\n'
+
+PULL_REQUEST_TITLE_LIST=($PULL_REQUEST_TITLE)
+TARGET_BRANCH_LIST=($TARGET_BRANCH)
+SOURCE_BRANCH_LIST=($SOURCE_BRANCH)
+
+for (( i=0; i<${#PULL_REQUEST_TITLE_LIST[@]}; i++ ))
+do
+    curl --headers "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" -X POST "https://$NEW_GITLAB_URL/api/v4/projects/$NEW_PROJECT_ID/merge_requests?source_branch=${SOURCE_BRANCH_LIST[$i]}&target_branch=${TARGET_BRANCH_LIST[$i]}&title=${PULL_REQUEST_TITLE_LIST[$i]}"
+done
 
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Cofiguring new remote....."
 cat << EOF >> "$FULL_LOCATION"/.git/config
