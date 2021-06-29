@@ -7,7 +7,7 @@ some times you are migrating between two gitlab or other git manager instances s
 You should have `jq, git, curl` Ready
 
 ## How to run
-1. Change variables (`env.sh` file)
+1. Copy `example-env.sh` to `env.sh` & customize it.
 2. 1. Run for one repo
 ```bash
 chmod +x ./git-mover.sh
