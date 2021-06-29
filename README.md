@@ -11,7 +11,7 @@ You should have `jq, git, curl` Ready
 2. 1. Run for one repo
 ```bash
 chmod +x ./git-mover.sh
-./mover.sh <Your Repo address>
+./git-mover.sh <Your Repo address>
 ```
 2. 2. run for all repos
 ```bash
