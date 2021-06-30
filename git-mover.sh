@@ -79,39 +79,6 @@ echo "$(tput setaf 4)INFO:$(tput sgr 0) Creating Project on new gitlab....."
 NEW_PROJECT_ID=`curl --header "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" "https://$NEW_GITLAB_URL/api/v4/projects?name=$FOLDER_NAME&path=$FOLDER_NAME&namespace_id=$GROUP_ID" -X POST | jq '.id'`
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Project created"
 
-_end=$((`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects?search=$FOLDER_NAME" | jq '.[] | .id| wc -l`))
-number=1
-clear
-echo "$(tput setaf 4)INFO:$(tput sgr 0) Moving Merge Requests....."
-OLD_PROJECT_ID=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects?search=$FOLDER_NAME" | jq '.[] | .id'`
-
-PULL_REQUEST_TITLE=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .title'`
-
-TARGET_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .target_branch'`
-
-SOURCE_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$PROJECT_ID/merge_requests?state=opened" | jq '.[] | .source_branch'`
-
-IFS=$'\n'
-
-PULL_REQUEST_TITLE_LIST=($PULL_REQUEST_TITLE)
-TARGET_BRANCH_LIST=($TARGET_BRANCH)
-SOURCE_BRANCH_LIST=($SOURCE_BRANCH)
-
-for (( i=0; i<${#PULL_REQUEST_TITLE_LIST[@]}; i++ ))
-do
-    tput el
-    tput cud1
-    sleep 0.1
-    tput cup 2 0
-    curl --headers "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" -X POST "https://$NEW_GITLAB_URL/api/v4/projects/$NEW_PROJECT_ID/merge_requests?source_branch=${SOURCE_BRANCH_LIST[$i]}&target_branch=${TARGET_BRANCH_LIST[$i]}&title=${PULL_REQUEST_TITLE_LIST[$i]}"
-    tput cup 1 0
-    ProgressBar ${number} ${_end}
-    number=$((number + 1))
-done
-tput cup 1 0
-echo "$(tput setaf 4)INFO:$(tput sgr 0)Merge Requests Moved"
-tput cup 4 0
-
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Cofiguring new remote....."
 cat << EOF >> "$FULL_LOCATION"/.git/config
 [remote "newRemote"]
@@ -124,6 +91,40 @@ echo "$(tput setaf 4)INFO:$(tput sgr 0) Pushing....."
 git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" push -u newRemote --all
 git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" push -u newRemote --tags
 echo "$(tput setaf 4)INFO:$(tput sgr 0) Done"
+
+clear
+echo "$(tput setaf 4)INFO:$(tput sgr 0) Moving Merge Requests....."
+OLD_PROJECT_ID=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects?search=$FOLDER_NAME" | jq '.[] | .id'`
+
+PULL_REQUEST_TITLE=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$OLD_PROJECT_ID/merge_requests?state=opened" | jq '.[] | .title'`
+
+TARGET_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$OLD_PROJECT_ID/merge_requests?state=opened" | jq '.[] | .target_branch'`
+
+SOURCE_BRANCH=`curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects/$OLD_PROJECT_ID/merge_requests?state=opened" | jq '.[] | .source_branch'`
+
+IFS=$'\n'
+
+PULL_REQUEST_TITLE_LIST=($PULL_REQUEST_TITLE)
+TARGET_BRANCH_LIST=($TARGET_BRANCH)
+SOURCE_BRANCH_LIST=($SOURCE_BRANCH)
+
+# _end=$(curl --header "PRIVATE-TOKEN: $OLD_PRIVATE_GITLAB_TOKEN" "https://$OLD_GITLAB_URL/api/v4/projects?search=$FOLDER_NAME" | jq '.[] | .id| wc -l)
+# number=1
+
+for (( i=0; i<${#PULL_REQUEST_TITLE_LIST[@]}; i++ ))
+do
+    tput el
+    tput cud1
+    sleep 0.1
+    tput cup 2 0
+    curl --header "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" -X POST "https://$NEW_GITLAB_URL/api/v4/projects/$NEW_PROJECT_ID/merge_requests?source_branch=${SOURCE_BRANCH_LIST[$i]}&target_branch=${TARGET_BRANCH_LIST[$i]}&title=${PULL_REQUEST_TITLE_LIST[$i]}"
+    tput cup 1 0
+    # ProgressBar ${number} ${_end}
+    # number=$((number + 1))
+done
+tput cup 1 0
+echo "$(tput setaf 4)INFO:$(tput sgr 0)Merge Requests Moved"
+tput cup 4 0
 
 unset
 exit 0
