@@ -59,6 +59,7 @@ tput cup 2 0
 git --git-dir="$FULL_LOCATION/.git" --work-tree="$FULL_LOCATION" fetch --all
 tput cup 1 0
 ProgressBar ${number} ${_end}
+number=$((number + 1))
 tput el
 tput cud1
 sleep 0.1
@@ -105,6 +106,7 @@ do
     curl --headers "PRIVATE-TOKEN: $PRIVATE_GITLAB_TOKEN" -X POST "https://$NEW_GITLAB_URL/api/v4/projects/$NEW_PROJECT_ID/merge_requests?source_branch=${SOURCE_BRANCH_LIST[$i]}&target_branch=${TARGET_BRANCH_LIST[$i]}&title=${PULL_REQUEST_TITLE_LIST[$i]}"
     tput cup 1 0
     ProgressBar ${number} ${_end}
+    number=$((number + 1))
 done
 tput cup 1 0
 echo "$(tput setaf 4)INFO:$(tput sgr 0)Merge Requests Moved"
