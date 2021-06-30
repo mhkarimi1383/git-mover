@@ -25,3 +25,4 @@ chmod +x ./git-mover.sh
 - [x] Create another script do it for all repos (in a loop)
 - [x] Variables from `env.sh` are not working (source command will solve it I think) [it should work now]
 - [x] Move merge requests if it's posible
+- [ ] We Are Getting Merge Requests and Merge requests curl is success but it's not creating them
